@@ -36,28 +36,31 @@ class SimplevariationCartDetails(CartDetails):
         qs = CartItem.objects.filter(cart=cart_object).filter(product=product)
         found_cartitem_id = None
         merge = False
-        for cartitem in qs:
-            # for each CartItem in the Cart, get it's options and text options
-            cartitemoptions = CartItemOption.objects.filter(
-                cartitem=cartitem, option__in=option_ids
-                )
-                
-            cartitemtxtoptions = CartItemTextOption.objects.filter(
-                text_option__in=text_option_ids.keys(),
-                text__in=text_option_ids.values()
-                )
-            
-            if len(cartitemoptions) + len(cartitemtxtoptions) == (len(option_ids) + len(text_option_ids)):
-                found_cartitem_id = cartitem.id
-                merge = True
-                break
+        
+        # TODO: Something funky happening with the merged qs preventing new 
+        # carts from being created. We can live with separate line items for now...
+        # for cartitem in qs:
+        #             # for each CartItem in the Cart, get it's options and text options
+        #             cartitemoptions = CartItemOption.objects.filter(
+        #                 cartitem=cartitem, option__in=option_ids
+        #                 )
+        #                 
+        #             cartitemtxtoptions = CartItemTextOption.objects.filter(
+        #                 text_option__in=text_option_ids.keys(),
+        #                 text__in=text_option_ids.values()
+        #                 )
+        #             
+        #             if len(cartitemoptions) + len(cartitemtxtoptions) == (len(option_ids) + len(text_option_ids)):
+        #                 found_cartitem_id = cartitem.id
+        #                 merge = True
+        #                 break
 
         #if we found a CartItem object that has the same options, we need
         #to select this one instead of just any CartItem that belongs to this
         #cart and this product.
         if found_cartitem_id:
             qs = CartItem.objects.filter(pk=found_cartitem_id)
-
+        
         cart_item = cart_object.add_product(
             product, product_quantity, merge=merge, queryset=qs)
         cart_object.save()
